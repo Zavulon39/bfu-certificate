@@ -1,12 +1,12 @@
 from src.utils.singletone import SingletonMeta
-from src.types import Auth, Certificate
+from src.types import Certificate
 
 
 class DataManager(metaclass=SingletonMeta):
     """ Менеджер глобальных данных """
 
     def __init__(self):
-        self.auth: Auth = Auth([])
+        self.authentication_list = list[tuple[str, str]]
         self.certificates: list[Certificate] = []
 
 

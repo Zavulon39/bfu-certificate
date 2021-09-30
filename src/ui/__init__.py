@@ -2,7 +2,7 @@ from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QMainWindow
 from .auth import AuthScreen
 from src.manager.data import DataManager
-from ..types import Auth, IEmitter
+from ..types import IEmitter
 
 
 class MainWindow(QMainWindow, IEmitter):
@@ -15,9 +15,9 @@ class MainWindow(QMainWindow, IEmitter):
         self.setWindowIcon(QIcon('assets/img/favicon.png'))
 
         data = DataManager()
-        data.auth = Auth([
+        data.authentication_list = [
             ('admin', 'admin')
-        ])
+        ]
 
         self._screen = AuthScreen(self)
         self._screen.show()

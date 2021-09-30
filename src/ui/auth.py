@@ -84,7 +84,7 @@ class AuthScreen(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setFamily("Montserrat")
         font.setPointSize(14)
-        font.setItalic(True)
+        font.setItalic(False)
         self.password.setFont(font)
         self.password.setStyleSheet("QLineEdit {\n"
                                     "    width: 200px;\n"
@@ -98,6 +98,7 @@ class AuthScreen(QtWidgets.QWidget):
                                     "    border-color: rgb(146, 146, 146);\n"
                                     "}")
         self.password.setObjectName("password")
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.verticalLayout.addWidget(self.password, 0, QtCore.Qt.AlignHCenter)
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
@@ -133,11 +134,22 @@ class AuthScreen(QtWidgets.QWidget):
 
     def init_logic(self):
         """ Бизнес-логика для экрана авторизации """
-
         self.pushButton.clicked.connect(self.btn_click_handler)
 
     def btn_click_handler(self):
         """ Обработчик кнопки входа """
+        input_login, input_password = self.login.text(), self.password.text()
 
-        data = DataManager()
-        UseScreen.set_screen(Example(UseScreen.get_ui()), self)
+        for login, password in DataManager().authentication_list:
+            if input_login == login and input_password == password:
+                UseScreen.set_screen(Example(UseScreen.get_ui()), self)
+                return
+
+        error_message = QtWidgets.QMessageBox(self)  # всплывающие окно об ошибке
+        error_message.setWindowTitle('Ошибка авторизации')
+        error_message.setText('Логин или пароль неверный')
+        font = QtGui.QFont()
+        font.setFamily("Montserrat")
+        font.setPointSize(10)
+        error_message.setFont(font)
+        error_message.exec_()
