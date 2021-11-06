@@ -1,8 +1,7 @@
 import sys
 import os
 from PyQt5.QtWidgets import QApplication
-
-from src.hooks.use_screen import UseScreen
+from src.manager.screen import ScreenManager
 from src.ui import MainWindow
 
 if __name__ == '__main__':
@@ -10,5 +9,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ui = MainWindow()
     ui.show()
-    UseScreen.connect(ui)
+    ScreenManager.connect(ui)
     sys.exit(app.exec())

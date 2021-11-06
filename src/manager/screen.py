@@ -1,8 +1,8 @@
 _ui = None
 
 
-class UseScreen:
-    """ Hook для навигации по экранам (основан на ООП паттерне dispatcher-emitter) """
+class ScreenManager:
+    """ Менеджер для навигации по экранам (основан на ООП паттерне dispatcher-emitter) """
 
     @staticmethod
     def connect(ui):
@@ -14,7 +14,7 @@ class UseScreen:
         return _ui
 
     @staticmethod
-    def set_screen(new_screen, prev_screen):
+    def set_screen(new_screen, prev_screen) -> object:
         global _ui
         _ui._screen = new_screen  # присваиваем новый экран
         _ui._screen.show()  # показываем новый
