@@ -7,7 +7,7 @@ from ..types import Certificate
 
 
 class CertificateListScreen(QtWidgets.QWidget):
-    """ Все заявки на получение справки """
+    """ Экран с выводом всех заявок """
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -127,10 +127,9 @@ class CertificateListScreen(QtWidgets.QWidget):
         # Добавление записей в таблицу, бизнес-логика
         certificates = DataManager().certificate_list
 
-        self.tableWidget.doubleClicked.connect(self.cell_click_handler)
-
         self.search_btn.clicked.connect(self.filter_handler)
         self.save_btn.clicked.connect(self.save_handler)
+        self.tableWidget.doubleClicked.connect(self.cell_click_handler)
 
         header = self.tableWidget.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)

@@ -3,7 +3,7 @@ from src.manager.http import HttpManager
 
 
 class BootstrapManager:
-    """ Менеджер для приготовления приложения к работе """
+    """ Менеджер для подготовления приложения к работе """
 
     @staticmethod
     def bootstrap():

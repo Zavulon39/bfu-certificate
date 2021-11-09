@@ -3,7 +3,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from src.manager.data import DataManager
 from src.manager.screen import ScreenManager
 from docxtpl import DocxTemplate
-from ..types import Certificate
 
 
 class DetailScreen(QtWidgets.QWidget):
@@ -276,6 +275,15 @@ class DetailScreen(QtWidgets.QWidget):
         })
         doc.save(f'{name}.docx')
 
+        message = QtWidgets.QMessageBox(self)
+        message.setWindowTitle('Успех!')
+        message.setText('Справка сохранилась в директорию, где находиться приложение')
+        font = QtGui.QFont()
+        font.setFamily("Montserrat")
+        font.setPointSize(10)
+        message.setFont(font)
+        message.exec_()
+
     def change_handler(self, enrolment_order: str):
         """ Обработчик изменения любого поля """
 
@@ -303,12 +311,3 @@ class DetailScreen(QtWidgets.QWidget):
             from_date,
             to_date
         ))
-
-        message = QtWidgets.QMessageBox(self)
-        message.setWindowTitle('Успех!')
-        message.setText('Справка сохранилась в директорию, где находиться приложение')
-        font = QtGui.QFont()
-        font.setFamily("Montserrat")
-        font.setPointSize(10)
-        message.setFont(font)
-        message.exec_()
