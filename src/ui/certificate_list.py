@@ -98,7 +98,7 @@ class CertificateListScreen(QtWidgets.QWidget):
                                       " }")
         self.clear_filters.setObjectName("clear_filters")
         self.save_btn = QtWidgets.QPushButton(self)
-        self.save_btn.setText('Сбросить фильтры')
+        self.save_btn.setText('Распечатать выбранные')
         self.save_btn.setGeometry(QtCore.QRect(30, 480, 271, 31))
         font = QtGui.QFont()
         font.setFamily("Montserrat")
