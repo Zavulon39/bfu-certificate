@@ -53,14 +53,14 @@ class CertificateListScreen(QtWidgets.QWidget):
         item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(2, item)
         self.is_checked = QtWidgets.QCheckBox('Распечатана', self)
-        self.is_checked.setGeometry(QtCore.QRect(681, 81, 121, 31))
+        self.is_checked.setGeometry(QtCore.QRect(581, 81, 121, 31))
         font = QtGui.QFont()
         font.setFamily("Montserrat")
         font.setPointSize(12)
         item.setFont(font)
         self.is_checked.setFont(font)
         self.search_btn = QtWidgets.QPushButton(self)
-        self.search_btn.setGeometry(QtCore.QRect(811, 81, 111, 31))
+        self.search_btn.setGeometry(QtCore.QRect(711, 81, 111, 31))
         self.search_btn.setText('Поиск')
         font = QtGui.QFont()
         font.setFamily("Montserrat")
@@ -78,8 +78,27 @@ class CertificateListScreen(QtWidgets.QWidget):
                                     "    background: #f57f17;\n"
                                     " }")
         self.search_btn.setObjectName("search_btn")
+        self.clear_filters = QtWidgets.QPushButton(self)
+        self.clear_filters.setGeometry(QtCore.QRect(831, 81, 111, 31))
+        self.clear_filters.setText('Сбросить')
+        font = QtGui.QFont()
+        font.setFamily("Montserrat")
+        font.setPointSize(14)
+        self.clear_filters.setFont(font)
+        self.clear_filters.setStyleSheet("QPushButton {\n"
+                                      "    background: #c62828;\n"
+                                      "        color: #fff;\n"
+                                      "     width: 100px;\n"
+                                      "    border-radius: 6px;\n"
+                                      "    padding: 4px;\n"
+                                      "}\n"
+                                      "          \n"
+                                      "QPushButton:hover {\n"
+                                      "    background: #b71c1c;\n"
+                                      " }")
+        self.clear_filters.setObjectName("clear_filters")
         self.save_btn = QtWidgets.QPushButton(self)
-        self.save_btn.setText('Распечатать выбранные')
+        self.save_btn.setText('Сбросить фильтры')
         self.save_btn.setGeometry(QtCore.QRect(30, 480, 271, 31))
         font = QtGui.QFont()
         font.setFamily("Montserrat")
@@ -98,7 +117,7 @@ class CertificateListScreen(QtWidgets.QWidget):
                                     " }")
         self.save_btn.setObjectName("save_btn")
         self.student_name = QtWidgets.QLineEdit(self)
-        self.student_name.setGeometry(QtCore.QRect(350, 86, 321, 22))
+        self.student_name.setGeometry(QtCore.QRect(250, 86, 321, 22))
         self.student_name.setPlaceholderText('Имя подавшего заявку...')
         font = QtGui.QFont()
         font.setFamily("Montserrat")
@@ -130,6 +149,7 @@ class CertificateListScreen(QtWidgets.QWidget):
 
         self.search_btn.clicked.connect(lambda: self.draw_table(self.get_filtered_data()))
         self.save_btn.clicked.connect(self.save_handler)
+        self.clear_filters.clicked.connect(lambda: self.draw_table(DataManager().certificate_list))
         self.tableWidget.doubleClicked.connect(self.cell_click_handler)
 
         header = self.tableWidget.horizontalHeader()
@@ -210,13 +230,7 @@ class CertificateListScreen(QtWidgets.QWidget):
         """ Возвращает отфильтрованные данные, по фильтрам в интерфейсе """
         name = self.student_name.text().strip()
 
-        if self.is_checked.isChecked():
-            if name:
-                return list(filter(lambda el: el.is_checked and name.lower() in el.name.lower(), DataManager().certificate_list))
-            else:
-                return list(filter(lambda el: el.is_checked, DataManager().certificate_list))
+        if name:
+            return list(filter(lambda el: el.is_checked == self.is_checked.isChecked() and name.lower() in el.name.lower(), DataManager().certificate_list))
         else:
-            if name:
-                return list(filter(lambda el: name.lower() in el.name.lower(), DataManager().certificate_list))
-            else:
-                return DataManager().certificate_list
+            return list(filter(lambda el: el.is_checked == self.is_checked.isChecked(), DataManager().certificate_list))
