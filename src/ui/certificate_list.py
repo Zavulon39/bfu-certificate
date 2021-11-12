@@ -12,6 +12,7 @@ class CertificateListScreen(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.mode = 'clear'  # нужен для печати нужных справок
         self.setObjectName("Form")
         self.resize(972, 531)
         self.verticalLayoutWidget = QtWidgets.QWidget(self)
@@ -147,9 +148,9 @@ class CertificateListScreen(QtWidgets.QWidget):
         # Добавление записей в таблицу, бизнес-логика
         certificates = DataManager().certificate_list
 
-        self.search_btn.clicked.connect(lambda: self.draw_table(self.get_filtered_data()))
-        self.save_btn.clicked.connect(self.save_handler)
-        self.clear_filters.clicked.connect(lambda: self.draw_table(DataManager().certificate_list))
+        self.search_btn.clicked.connect(self.search_click_handler)
+        self.save_btn.clicked.connect(self.save_click_handler)
+        self.clear_filters.clicked.connect(self.clear_filters_click_handler)
         self.tableWidget.doubleClicked.connect(self.cell_click_handler)
 
         header = self.tableWidget.horizontalHeader()
@@ -185,7 +186,8 @@ class CertificateListScreen(QtWidgets.QWidget):
 
         ScreenManager.set_screen(DetailScreen(ScreenManager.get_ui()), self)
 
-    def save_handler(self):
+    def save_click_handler(self):
+        """ Обработчик нажатия на кнопку печати """
         try:
             for data in self.get_filtered_data():
                 for i in range(data.copies_count // 2):
@@ -228,9 +230,23 @@ class CertificateListScreen(QtWidgets.QWidget):
 
     def get_filtered_data(self) -> list[Certificate]:
         """ Возвращает отфильтрованные данные, по фильтрам в интерфейсе """
+        if self.mode == 'clear':
+            return DataManager().certificate_list
         name = self.student_name.text().strip()
 
         if name:
             return list(filter(lambda el: el.is_checked == self.is_checked.isChecked() and name.lower() in el.name.lower(), DataManager().certificate_list))
         else:
             return list(filter(lambda el: el.is_checked == self.is_checked.isChecked(), DataManager().certificate_list))
+
+    def clear_filters_click_handler(self):
+        """ Обработчик нажатия на кнопку сброса фильтров """
+        self.student_name.setText('')
+        self.is_checked.setChecked(False)
+        self.mode = 'clear'
+        self.draw_table(self.get_filtered_data())
+
+    def search_click_handler(self):
+        """ Обработчик нажатия на кнопку сброса фильтров """
+        self.mode = 'search'
+        self.draw_table(self.get_filtered_data())
