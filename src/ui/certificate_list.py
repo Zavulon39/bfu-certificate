@@ -68,16 +68,16 @@ class CertificateListScreen(QtWidgets.QWidget):
         font.setPointSize(14)
         self.search_btn.setFont(font)
         self.search_btn.setStyleSheet("QPushButton {\n"
-                                    "    background: #f9a825;\n"
-                                    "        color: #fff;\n"
-                                    "     width: 100px;\n"
-                                    "    border-radius: 6px;\n"
-                                    "    padding: 4px;\n"
-                                    "}\n"
-                                    "          \n"
-                                    "QPushButton:hover {\n"
-                                    "    background: #f57f17;\n"
-                                    " }")
+                                      "    background: #f9a825;\n"
+                                      "        color: #fff;\n"
+                                      "     width: 100px;\n"
+                                      "    border-radius: 6px;\n"
+                                      "    padding: 4px;\n"
+                                      "}\n"
+                                      "          \n"
+                                      "QPushButton:hover {\n"
+                                      "    background: #f57f17;\n"
+                                      " }")
         self.search_btn.setObjectName("search_btn")
         self.clear_filters = QtWidgets.QPushButton(self)
         self.clear_filters.setGeometry(QtCore.QRect(831, 81, 111, 31))
@@ -87,16 +87,16 @@ class CertificateListScreen(QtWidgets.QWidget):
         font.setPointSize(14)
         self.clear_filters.setFont(font)
         self.clear_filters.setStyleSheet("QPushButton {\n"
-                                      "    background: #c62828;\n"
-                                      "        color: #fff;\n"
-                                      "     width: 100px;\n"
-                                      "    border-radius: 6px;\n"
-                                      "    padding: 4px;\n"
-                                      "}\n"
-                                      "          \n"
-                                      "QPushButton:hover {\n"
-                                      "    background: #b71c1c;\n"
-                                      " }")
+                                         "    background: #c62828;\n"
+                                         "        color: #fff;\n"
+                                         "     width: 100px;\n"
+                                         "    border-radius: 6px;\n"
+                                         "    padding: 4px;\n"
+                                         "}\n"
+                                         "          \n"
+                                         "QPushButton:hover {\n"
+                                         "    background: #b71c1c;\n"
+                                         " }")
         self.clear_filters.setObjectName("clear_filters")
         self.save_btn = QtWidgets.QPushButton(self)
         self.save_btn.setText('Распечатать выбранные')
@@ -117,6 +117,25 @@ class CertificateListScreen(QtWidgets.QWidget):
                                     "    background: #26ad9f;\n"
                                     " }")
         self.save_btn.setObjectName("save_btn")
+        self.save_in_one = QtWidgets.QPushButton(self)
+        self.save_in_one.setText('Распечатать в один файл')
+        self.save_in_one.setGeometry(QtCore.QRect(320, 480, 271, 31))
+        font = QtGui.QFont()
+        font.setFamily("Montserrat")
+        font.setPointSize(14)
+        self.save_in_one.setFont(font)
+        self.save_in_one.setStyleSheet("QPushButton {\n"
+                                       "    background: #2BBBAD;\n"
+                                       "        color: #fff;\n"
+                                       "     width: 100px;\n"
+                                       "    border-radius: 6px;\n"
+                                       "    padding: 4px;\n"
+                                       "}\n"
+                                       "          \n"
+                                       "QPushButton:hover {\n"
+                                       "    background: #26ad9f;\n"
+                                       " }")
+        self.save_in_one.setObjectName("save_in_one")
         self.student_name = QtWidgets.QLineEdit(self)
         self.student_name.setGeometry(QtCore.QRect(250, 86, 321, 22))
         self.student_name.setPlaceholderText('Имя подавшего заявку...')
@@ -151,6 +170,7 @@ class CertificateListScreen(QtWidgets.QWidget):
         self.search_btn.clicked.connect(self.search_click_handler)
         self.save_btn.clicked.connect(self.save_click_handler)
         self.clear_filters.clicked.connect(self.clear_filters_click_handler)
+        self.save_in_one.clicked.connect(self.save_in_one_click_handler)
         self.tableWidget.doubleClicked.connect(self.cell_click_handler)
 
         header = self.tableWidget.horizontalHeader()
@@ -160,6 +180,7 @@ class CertificateListScreen(QtWidgets.QWidget):
         self.draw_table(certificates)
 
     def draw_table(self, certificates: list[Certificate]):
+        """ Выводит таблицу """
         self.tableWidget.setRowCount(len(certificates))
 
         for idx, certificate in enumerate(certificates):
@@ -206,7 +227,7 @@ class CertificateListScreen(QtWidgets.QWidget):
                         'id': data.spr_id
                     })
 
-                    doc.save(f'{data.name}_{i+1}.docx')
+                    doc.save(f'{data.name}_{i + 1}.docx')
 
                 data.update_db()
         except PackageNotFoundError:
@@ -235,7 +256,9 @@ class CertificateListScreen(QtWidgets.QWidget):
         name = self.student_name.text().strip()
 
         if name:
-            return list(filter(lambda el: el.is_checked == self.is_checked.isChecked() and name.lower() in el.name.lower(), DataManager().certificate_list))
+            return list(
+                filter(lambda el: el.is_checked == self.is_checked.isChecked() and name.lower() in el.name.lower(),
+                       DataManager().certificate_list))
         else:
             return list(filter(lambda el: el.is_checked == self.is_checked.isChecked(), DataManager().certificate_list))
 
@@ -250,3 +273,41 @@ class CertificateListScreen(QtWidgets.QWidget):
         """ Обработчик нажатия на кнопку сброса фильтров """
         self.mode = 'search'
         self.draw_table(self.get_filtered_data())
+
+    def save_in_one_click_handler(self):
+        try:
+            doc = DocxTemplate('assets/certificate_many.docx')
+            ctx = {'list': [
+                {
+                    'now': date.today(),
+                    'enrolment_order': data.enrolment_order,
+                    'name': data.name,
+                    'birthday': data.birthday,
+                    'course': data.course,
+                    'base': data.base,
+                    'direction': data.direction,
+                    'from_date': data.from_date,
+                    'to_date': data.to_date,
+                    'id': data.spr_id
+                } for data in self.get_filtered_data()
+            ]}
+            doc.render(ctx)
+            doc.save('Коллекция.docx')
+        except PackageNotFoundError:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Ошибка!')
+            message.setText('Файл assets/certificate_many.docx не найден')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
+        else:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Успех!')
+            message.setText('Коллекция справок сохранились в директорию, где находиться приложение')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
