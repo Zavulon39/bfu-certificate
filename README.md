@@ -37,3 +37,9 @@
 * **TYPES** <br> 
 ```.\src\types\__init__.py``` <br>
 Файл с описанием типов 
+
+---
+При использовании приложения в production, убрать префикс dev_ в .\src\manager\bootstrap.py !
+<br>
+Для сборки приложения используйте команду<br>
+```pyinstaller --onefile --noconsole --icon ".\assets\img\favicon.ico" main.py```

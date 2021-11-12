@@ -1,43 +1,34 @@
 from datetime import date
 import requests
-from ..types import Certificate
-
-_id = 0
-
-
-def map_json(el: dict[str, str]):
-    global _id
-    _id += 1
-
-    return Certificate(
-        id=_id,
-        name=el['ФизическоеЛицо'],
-        birthday=date(*reversed(list(map(int, el['ДатаРождения'].split(' ')[0].split('.'))))),
-        course=(el['Курс'] + ' ' + el['ФормаОбучения']).lower(),
-        base=el['Основа'].lower(),
-        direction=el['Направление'],
-        enrolment_order=el['ПриказОЗачислении'],
-        from_date=date(*reversed(list(map(int, el['ДатаНачалаОбучения'].split('.'))))),
-        to_date=date(*reversed(list(map(int, el['ДатаОкончанияОбучения'].split('.'))))),
-        is_checked=False
-    )
 
 
 class HttpManager:
     """ Менеджер для получения данных с сервера """
 
     @staticmethod
-    def get(url: str) -> list[Certificate]:
+    def get(url: str) -> list[dict]:
+        """ Выполняет запрос на сервер """
         res = requests.get(url)
 
         if res.status_code == 200:
-            return list(map(map_json, res.json()))
+            return res.json()
 
-        return []
+        return [{
+            'ФизическоеЛицо': 'Ошибка при получении данных с сервера',
+            'ДатаРождения': str(date.today()),
+            'Курс': 'None',
+            'ФормаОбучения': 'None',
+            'Основа': 'None',
+            'Направление': 'None',
+            'ПриказОЗачислении': 'None',
+            'ДатаНачалаОбучения': str(date.today()),
+            'ДатаОкончанияОбучения': str(date.today()),
+        }]
 
     @staticmethod
     def dev_get():
-        data = [{"GUID": "c94ab382-ef88-11eb-a694-005056970631",
+        """ Функция для разработки """
+        return [{"GUID": "c94ab382-ef88-11eb-a694-005056970631",
                  "ПриказОЗачислении": "Приказ о зачислении №3019 ст от 01.09.2019", "ЭлектроннаяПочта": "",
                  "Телефон": "", "АдресПроживания": "", "АдресРегистрации": "",
                  "ФизическоеЛицо": "Костылева Екатерина Михайловна", "Пол": "Женский", "Фамилия": "Костылева",
@@ -66,5 +57,3 @@ class HttpManager:
                  "Общежитие": "Общежитие № 6, ул.Чайковского, д.56, корпус 26", "Гражданство": "РОССИЯ",
                  "Статус": "Является студентом", "ДатаНачалаОбучения": "01.09.2019", "СрокОбучения": 4,
                  "ДатаОкончанияОбучения": "31.08.2023"}]
-
-        return list(map(map_json, data))

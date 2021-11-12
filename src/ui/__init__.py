@@ -13,7 +13,7 @@ class MainWindow(QMainWindow):
         self.resize(972, 531)
         self.setFixedSize(self.size())
         self.setFont(QFont('Montserrat'))
-        self.setWindowIcon(QIcon('assets/img/favicon.png'))
+        self.setWindowIcon(QIcon('assets/img/favicon.ico'))
 
         BootstrapManager.bootstrap()
 

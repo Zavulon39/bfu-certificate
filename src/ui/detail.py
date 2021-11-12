@@ -1,8 +1,9 @@
 from datetime import date
+from docxtpl import DocxTemplate
+from docx.opc.exceptions import PackageNotFoundError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from src.manager.data import DataManager
 from src.manager.screen import ScreenManager
-from docxtpl import DocxTemplate
 
 
 class DetailScreen(QtWidgets.QWidget):
@@ -229,7 +230,7 @@ class DetailScreen(QtWidgets.QWidget):
 
         certificate = DataManager().certificate_detail
 
-        self.h1.setText(f"Заявка № {certificate.id}")
+        self.h1.setText(f"Заявка № {certificate.spr_id}")
         self.student_name.setText(certificate.name)
         self.start_date.setDate(certificate.from_date)
         self.end_date.setDate(certificate.to_date)
@@ -258,31 +259,45 @@ class DetailScreen(QtWidgets.QWidget):
         self.save_btn.clicked.connect(self.save_file)
 
     def save_file(self):
-        """ Обработчик нажатия на кнопку сохранения справки """
-        doc = DocxTemplate('assets/certificate.docx')
-        name = self.student_name.text()
+        try:
+            name = self.student_name.text()
+            certificate = DataManager().certificate_detail
 
-        doc.render({
-            'now': date.today(),
-            'enrolment_order': DataManager().certificate_detail.enrolment_order,
-            'name': name,
-            'birthday': self.birthday.text(),
-            'course': self.course.text(),
-            'base': self.base.text(),
-            'direction': self.direction.text(),
-            'from_date': self.start_date.text(),
-            'to_date': self.end_date.text(),
-        })
-        doc.save(f'{name}.docx')
+            for i in range(certificate.copies_count // 2):
+                doc = DocxTemplate('assets/certificate.docx')
+                doc.render({
+                    'now': date.today(),
+                    'enrolment_order': certificate.enrolment_order,
+                    'name': name,
+                    'birthday': self.birthday.text(),
+                    'course': self.course.text(),
+                    'base': self.base.text(),
+                    'direction': self.direction.text(),
+                    'from_date': self.start_date.text(),
+                    'to_date': self.end_date.text(),
+                    'id': certificate.spr_id
+                })
+                doc.save(f'{name}_{i+1}.docx')
 
-        message = QtWidgets.QMessageBox(self)
-        message.setWindowTitle('Успех!')
-        message.setText('Справка сохранилась в директорию, где находиться приложение')
-        font = QtGui.QFont()
-        font.setFamily("Montserrat")
-        font.setPointSize(10)
-        message.setFont(font)
-        message.exec_()
+            certificate.update_db()
+        except PackageNotFoundError:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Ошибка!')
+            message.setText('Файл assets/certificate.docx не найден')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
+        else:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Успех!')
+            message.setText('Справка сохранилась в директорию, где находиться приложение')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
 
     def change_handler(self, enrolment_order: str):
         """ Обработчик изменения любого поля """

@@ -1,4 +1,5 @@
 from datetime import date
+from docx.opc.exceptions import PackageNotFoundError
 from docxtpl import DocxTemplate
 from PyQt5 import QtCore, QtGui, QtWidgets
 from src.manager.data import DataManager
@@ -115,7 +116,7 @@ class CertificateListScreen(QtWidgets.QWidget):
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "Имя подавшего заявку студента"))
         item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("Form", "Дедлайн"))
+        item.setText(_translate("Form", "Направление"))
         item = self.tableWidget.horizontalHeaderItem(2)
         item.setText(_translate("Form", "Статус (распечатано/не распечатано)"))
 
@@ -127,7 +128,7 @@ class CertificateListScreen(QtWidgets.QWidget):
         # Добавление записей в таблицу, бизнес-логика
         certificates = DataManager().certificate_list
 
-        self.search_btn.clicked.connect(self.filter_handler)
+        self.search_btn.clicked.connect(lambda: self.draw_table(self.get_filtered_data()))
         self.save_btn.clicked.connect(self.save_handler)
         self.tableWidget.doubleClicked.connect(self.cell_click_handler)
 
@@ -142,7 +143,7 @@ class CertificateListScreen(QtWidgets.QWidget):
 
         for idx, certificate in enumerate(certificates):
             a = QtWidgets.QTableWidgetItem(certificate.name)
-            b = QtWidgets.QTableWidgetItem(str(certificate.to_date))
+            b = QtWidgets.QTableWidgetItem(str(certificate.direction))
             icon = QtGui.QIcon('assets/img/success.png' if certificate.is_checked else 'assets/img/error.png')
             c = QtWidgets.QTableWidgetItem()
             c.setIcon(icon)
@@ -164,51 +165,58 @@ class CertificateListScreen(QtWidgets.QWidget):
 
         ScreenManager.set_screen(DetailScreen(ScreenManager.get_ui()), self)
 
-    def filter_handler(self):
-        """ Обработчик нажатия на кнопку "Поиск" """
+    def save_handler(self):
+        try:
+            for data in self.get_filtered_data():
+                for i in range(data.copies_count // 2):
+                    doc = DocxTemplate('assets/certificate.docx')
+
+                    doc.render({
+                        'now': date.today(),
+                        'enrolment_order': data.enrolment_order,
+                        'name': data.name,
+                        'birthday': data.birthday,
+                        'course': data.course,
+                        'base': data.base,
+                        'direction': data.direction,
+                        'from_date': data.from_date,
+                        'to_date': data.to_date,
+                        'id': data.spr_id
+                    })
+
+                    doc.save(f'{data.name}_{i+1}.docx')
+
+                data.update_db()
+        except PackageNotFoundError:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Ошибка!')
+            message.setText('Файл assets/certificate.docx не найден')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
+        else:
+            message = QtWidgets.QMessageBox(self)
+            message.setWindowTitle('Успех!')
+            message.setText('Справки сохранились в директорию, где находиться приложение')
+            font = QtGui.QFont()
+            font.setFamily("Montserrat")
+            font.setPointSize(10)
+            message.setFont(font)
+            message.exec_()
+
+    def get_filtered_data(self) -> list[Certificate]:
+        """ Возвращает отфильтрованные данные, по фильтрам в интерфейсе """
         name = self.student_name.text().strip()
 
         if self.is_checked.isChecked():
             if name:
-                self.draw_table(
-                    list(filter(lambda el: el.is_checked and el.name == name, DataManager().certificate_list)))
+                return list(filter(lambda el: el.is_checked and name.lower() in el.name.lower(), DataManager().certificate_list))
             else:
-                self.draw_table(list(filter(lambda el: el.is_checked, DataManager().certificate_list)))
+                return list(filter(lambda el: el.is_checked, DataManager().certificate_list))
         else:
             if name:
-                self.draw_table(list(filter(lambda el: el.name == name, DataManager().certificate_list)))
+                return list(filter(lambda el: name.lower() in el.name.lower(), DataManager().certificate_list))
             else:
-                self.draw_table(DataManager().certificate_list)
-
-    def save_handler(self):
-        doc = DocxTemplate('assets/certificate.docx')
-
-        if self.is_checked.isChecked():
-            qs = filter(lambda el: el.is_checked, DataManager().certificate_list)
-        else:
-            qs = DataManager().certificate_list
-
-        for data in qs:
-
-            doc.render({
-                'now': date.today(),
-                'enrolment_order': data.enrolment_order,
-                'name': data.name,
-                'birthday': data.birthday,
-                'course': data.course,
-                'base': data.base,
-                'direction': data.direction,
-                'from_date': data.from_date,
-                'to_date': data.to_date,
-            })
-
-            doc.save(f'{data.name}.docx')
-
-        message = QtWidgets.QMessageBox(self)
-        message.setWindowTitle('Успех!')
-        message.setText('Справки сохранились в директорию, где находиться приложение')
-        font = QtGui.QFont()
-        font.setFamily("Montserrat")
-        font.setPointSize(10)
-        message.setFont(font)
-        message.exec_()
+                return DataManager().certificate_list

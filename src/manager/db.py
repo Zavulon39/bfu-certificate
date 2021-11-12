@@ -1,18 +1,18 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 SERVER = ''
 DATABASE = ''
 USERNAME = ''
 PASSWORD = ''
-# у меня не получилось поставить этот пакет, тк там нужны зависимости от "Microsoft C++ Build Tools", а мне их впадлу ставить
 pyodbc = None
 
 
 class DBManager:
     """ Менеджер для работы с базой данных """
 
-    def get_request_spr(self):
+    @staticmethod
+    def get_request_spr() -> list[tuple]:
         """ Получает все заявки на справку """
         try:
             smss = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
@@ -31,8 +31,18 @@ class DBManager:
                 return [(row[0], row[1], f"{row[2]} {row[3]} {row[4]}", row[5], row[6], row[7]) for row in rows]
         except Exception as e:
             print(e)
+            return [(1, datetime.now(), 'Ошибка, в запросе select', date.today(), 0, -1)]
 
-    def update_request_spr(self, sprID, status):
+    @staticmethod
+    def dev_get_request_spr():
+        """ Функция для разработки """
+        return [
+            (1, datetime.now(), 'Костылева', 'Екатерина', 'Михайловна', date(*reversed(list(map(int, '17.04.1997 0:00:00'.split(' ')[0].split('.'))))), 2, 'Отпечатана'),
+            (2, datetime.now(), 'Костылева', 'Елизавета', 'Максимовна', date(*reversed(list(map(int, '05.03.2001 0:00:00'.split(' ')[0].split('.'))))), 4, 'Заказана')
+        ]
+
+    @staticmethod
+    def update_request_spr(sprID, status):
         """ Обновляет запись """
         try:
             smss = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'

@@ -7,15 +7,15 @@ class ScreenManager:
     @staticmethod
     def connect(ui):
         global _ui
-        _ui = ui  # присваиваем ссылку на главное окно
+        _ui = ui
 
     @staticmethod
     def get_ui():
         return _ui
 
     @staticmethod
-    def set_screen(new_screen, prev_screen) -> object:
+    def set_screen(new_screen, prev_screen):
         global _ui
-        _ui._screen = new_screen  # присваиваем новый экран
-        _ui._screen.show()  # показываем новый
-        prev_screen.close()  # закрываем старый
+        _ui._screen = new_screen
+        _ui._screen.show()
+        prev_screen.close()
